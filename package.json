@@ -1,0 +1,28 @@
+{
+  "name": "babel-plugin-proto-to-create",
+  "version": "0.1.0",
+  "description": "Convert `__proto__` in object literals to `Object.create` + `Object.assign`",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Isiah Meadows <isiahmeadows@gmail.com>",
+  "files": ["index.js"],
+  "license": "ISC",
+  "devDependencies": {
+    "babel-core": "^5.8.3",
+    "expect.js": "^0.3.1",
+    "mocha": "^2.2.5",
+    "object-assign": "^3.0.0"
+  },
+  "repository": "impinball/babel-plugin-proto-to-create",
+  "homepage": "https://github.com/impinball/babel-plugin-proto-to-create",
+  "bugs": "https://github.com/impinball/babel-plugin-proto-to-create/issues/new",
+  "keywords": [
+    "babel-plugin",
+    "babel",
+    "object",
+    "assign",
+    "create"
+  ]
+}
