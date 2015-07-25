@@ -1,0 +1,11 @@
+{
+    "asi": true,
+    "undef": true,
+    "unused": true,
+    "eqeqeq": true,
+    "eqnull": true,
+    "node": true,
+    "mocha": true,
+    "newcap": false,
+    "quotmark": "double"
+}

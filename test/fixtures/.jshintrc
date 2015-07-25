@@ -1,0 +1,13 @@
+{
+    "asi": true,
+    "undef": true,
+    "unused": true,
+    "eqeqeq": true,
+    "eqnull": true,
+    "node": true,
+    "mocha": true,
+    "proto": true,
+    "unused": false,
+    "predef": ["expect", "lastProto"],
+    "quotmark": "double"
+}
