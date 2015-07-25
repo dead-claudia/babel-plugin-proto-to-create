@@ -1,15 +1,14 @@
-// Keep this down to ES5 (except for __proto__).
+// Keep this down to ES5 (except for __proto__). Note that this must be runnable
+// in both strict and loose mode.
 
-"use strict"
-
-it("should set bar's prototype to foo", function () {
+it("should set the child prototype correctly", function () {
     var foo = {prop: 2}
 
     var bar = {
         __proto__: foo,
     }
 
-    expect(lastProto()).to.equal(foo)
+    expect(Object.getPrototypeOf(bar)).to.equal(foo)
 })
 
 it("should set the prototype correctly when extra props are set", function () {
@@ -20,7 +19,7 @@ it("should set the prototype correctly when extra props are set", function () {
         prop: 1,
     }
 
-    expect(lastProto()).to.equal(foo)
+    expect(Object.getPrototypeOf(bar)).to.equal(foo)
 })
 
 it("should set child properties in child types", function () {
@@ -35,7 +34,7 @@ it("should set child properties in child types", function () {
     expect(bar.prop).to.be(1)
 })
 
-it("should not modify foo's properties through subtypes", function () {
+it("should not modify prototype properties through subtypes", function () {
     var foo = {prop: 2}
 
     var bar = {

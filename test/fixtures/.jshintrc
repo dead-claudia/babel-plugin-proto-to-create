@@ -8,6 +8,6 @@
     "mocha": true,
     "proto": true,
     "unused": false,
-    "predef": ["expect", "lastProto"],
+    "predef": ["expect"],
     "quotmark": "double"
 }

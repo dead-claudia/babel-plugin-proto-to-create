@@ -4,14 +4,19 @@
   "description": "Convert `__proto__` in object literals to `Object.create` + `Object.assign`",
   "main": "index.js",
   "scripts": {
+    "lint": "jshint .",
+    "pretest": "npm run lint",
     "test": "mocha"
   },
   "author": "Isiah Meadows <isiahmeadows@gmail.com>",
-  "files": ["index.js"],
+  "files": [
+    "index.js"
+  ],
   "license": "ISC",
   "devDependencies": {
     "babel-core": "^5.8.3",
     "expect.js": "^0.3.1",
+    "jshint": "^2.8.0",
     "mocha": "^2.2.5",
     "object-assign": "^3.0.0"
   },
@@ -24,5 +29,8 @@
     "object",
     "assign",
     "create"
-  ]
+  ],
+  "dependencies": {
+    "es6-map": "^0.1.1"
+  }
 }
