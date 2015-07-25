@@ -35,14 +35,17 @@ describe("babel-plugin-proto-to-create", function () {
                     blacklist: blacklist,
                 }).code
 
-
+                try {
+                    fs.unlinkSync(target)
+                } catch (e) {
+                    // Swallow non-permission-related errors from this
+                    if (e.code === "EACCES") throw e
+                }
                 fs.writeFileSync(target, "/* jshint ignore:start */\n" + src)
 
                 /* jshint evil: true */
                 Function("expect", "it", src)(expect, it)
                 /* jshint evil: false */
-
-                fs.unlinkSync(target)
             })
         }
 
