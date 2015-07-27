@@ -31,7 +31,7 @@ describe("babel-plugin-proto-to-create", function () {
 
             describe(context, function () {
                 var src = babel.transformFileSync(file, {
-                    plugins: [".."],
+                    plugins: ["../plugin.js"],
                     blacklist: blacklist,
                 }).code
 
@@ -44,7 +44,7 @@ describe("babel-plugin-proto-to-create", function () {
                 fs.writeFileSync(target, "/* jshint ignore:start */\n" + src)
 
                 /* jshint evil: true */
-                Function("expect", "it", src)(expect, it)
+                Function("expect", "it", "require", src)(expect, it, require)
                 /* jshint evil: false */
             })
         }

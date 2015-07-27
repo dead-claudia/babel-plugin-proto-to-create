@@ -5,5 +5,6 @@
     "eqeqeq": true,
     "eqnull": true,
     "node": true,
-    "quotmark": "double"
+    "quotmark": "double",
+    "esnext": true
 }

@@ -9,5 +9,6 @@
     "proto": true,
     "unused": false,
     "predef": ["expect"],
-    "quotmark": "double"
+    "quotmark": "double",
+    "esnext": true
 }

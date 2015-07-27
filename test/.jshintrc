@@ -7,5 +7,6 @@
     "node": true,
     "mocha": true,
     "newcap": false,
-    "quotmark": "double"
+    "quotmark": "double",
+    "esnext": true
 }
