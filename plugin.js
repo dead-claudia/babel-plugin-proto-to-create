@@ -1,147 +1,137 @@
 "use strict"
 
-var _ = require("lodash")
+import assert from "assert"
 
-module.exports = function (babel) {
-    var t = babel.types
+export default function ({types: t, Plugin}) {
+  let addHelper = false
+  let define
 
-    var addHelper = false
-    var define
-
-    function toString(key) {
-        if (key.type === "Identifier") {
-            return t.literal(key.name)
-        } else {
-            return key
-        }
+  function toString(key) {
+    if (key.type === "Identifier") {
+      return t.literal(key.name)
+    } else {
+      return key
     }
+  }
 
-    function helper() {
-        var desc = t.identifier("desc")
-        return t.functionDeclaration(
-            define,
-            [t.identifier("host"), t.identifier("key"), desc],
-            t.blockStatement([
-                t.expressionStatement(t.assignmentExpression("=",
-                    t.memberExpression(desc, t.identifier("configurable")),
-                    t.assignmentExpression("=",
-                        t.memberExpression(desc, t.identifier("enumerable")),
-                        t.literal(true)))),
-                t.expressionStatement(t.callExpression(
-                    t.memberExpression(
-                        t.identifier("Object"),
-                        t.identifier("defineProperty")
-                    ),
-                    [t.identifier("host"), t.identifier("key"), desc]))
-            ])
-        )
-    }
+  function id(name) {
+    assert(typeof name === "string", "name should be a string")
+    return t.identifier(name)
+  }
 
-    function generate(proto, properties, scope) {
-        var ref = scope.generateUidIdentifier("ref")
-        var data = new Map()
-        // address duplicates
-        _.forEach(properties, function (prop) {
-            if (prop.kind === "init") {
-                data.set(prop.key, {
-                    init: prop.value,
-                    computed: data.computed,
-                })
-            } else if (prop.kind === "get" || prop.kind === "set") {
-                addHelper = true
-                var res = {computed: data.computed}
-                var value = prop.value
+  // This helper is smaller than the equivalent Object.defineProperty call after
+  // 2-3 getter/setter definitions, so it shouldn't be much of a problem being
+  // repeated across files.
+  function helper() {
+    assert(t.isIdentifier(define), "define should be an Identifier")
+    return t.functionDeclaration(
+      define,
+      [id("host"), id("key"), id("desc")],
+      t.blockStatement([
+        t.expressionStatement(t.assignmentExpression("=",
+          t.memberExpression(id("desc"), id("configurable")),
+          t.assignmentExpression("=",
+            t.memberExpression(id("desc"), id("enumerable")),
+            t.literal(true)))),
+        t.expressionStatement(t.callExpression(
+          t.memberExpression(id("Object"), id("defineProperty")),
+          [id("host"), id("key"), id("desc")]))
+      ])
+    )
+  }
 
-                if (!data.has(prop.key)) {
-                    data.set(prop.key, res)
-                } else {
-                    res = data.get(prop.key)
-                }
-
-                if (prop.kind === "get") {
-                    res.get = value
-                } else {
-                    res.set = value
-                }
-            }
+  function generate(proto, properties, scope) {
+    var ref = scope.generateUidIdentifier("ref")
+    var data = new Map()
+    // address duplicates
+    properties.forEach(prop => {
+      assert(t.isProperty(prop), "prop should be a Property")
+      if (prop.kind === "init") {
+        data.set(prop.key, {
+          init: prop.value,
+          computed: prop.computed,
         })
-        var assignments = [
-            t.variableDeclaration("var", [
-                t.variableDeclarator(
-                    ref,
-                    t.callExpression(
-                        t.memberExpression(
-                            t.identifier("Object"),
-                            t.identifier("create")
-                        ),
-                        [proto]
-                    ))
-            ])
-        ]
-        data.forEach(function (prop, key) {
-            if (prop.init) {
-                assignments.push(t.assignmentExpression("=",
-                    t.memberExpression(ref, key, prop.computed),
-                    prop.init))
-            } else {
-                var desc = []
-
-                if (prop.get) {
-                    desc.push(t.property("init", t.identifier("get"), prop.get))
-                }
-
-                if (prop.set) {
-                    desc.push(t.property("init", t.identifier("set"), prop.set))
-                }
-
-                assignments.push(t.callExpression(
-                    define,
-                    [ref, toString(key), t.objectExpression(desc)]))
-            }
-        })
-        assignments.push(ref)
-        return assignments
-    }
-
-    return new babel.Plugin("babel-plugin-proto-to-create", {
-        visitor: {
-            Program: {
-                enter: function (node, parent, scope) {
-                    define = scope.generateUidIdentifier("define")
-                },
-
-                exit: function (node) {
-                    if (!addHelper) return
-
-                    var first = node.body[0]
-
-                    // Keep this code strict mode if it already is.
-                    if (first.type === "Literal" &&
-                            first.value === "use strict") {
-                        node.body.splice(1, 0, helper())
-                    } else {
-                        node.body.unshift(helper())
-                    }
-                }
-            },
-
-            ObjectExpression: function (node, parent, scope) {
-                var props = node.properties
-                var pair = _(node.properties)
-                    .map(function (key, i) { return [key, i] })
-                    .filter("0", {
-                        type: "Property",
-                        kind: "init",
-                        computed: false,
-                        key: t.identifier("__proto__"),
-                    })
-                    .first()
-                if (pair) {
-                    // Remove the proto property
-                    props.splice(pair[1], 1)
-                    return generate(pair[0].value, props, scope)
-                }
-            }
-        }
+      } else {
+        assert(prop.kind === "get" || prop.kind === "set")
+        addHelper = true
+        var res = data.get(prop.key) || {computed: prop.computed}
+        var value = prop.value
+        data.set(prop.key, res)
+        res[prop.kind] = value
+      }
     })
+
+    const list = [
+      t.variableDeclaration("var", [
+        t.variableDeclarator(
+          ref,
+          t.callExpression(
+            t.memberExpression(id("Object"), id("create")),
+            [proto]
+          ))
+      ]),
+    ].concat(Array.from(data).map(([key, prop]) => {
+      assert(t.isExpression(key), "key should be an expression")
+
+      if (prop.init) {
+        assert(t.isExpression(prop.init), "prop should be an expression")
+        return t.assignmentExpression("=",
+          t.memberExpression(ref, key, prop.computed),
+          prop.init)
+      } else {
+        assert(prop.get || prop.set, "prop should be either a getter or setter")
+
+        const desc = []
+
+        if (prop.get) {
+          assert(t.isFunction(prop.get), "prop.get should be a function")
+        } else {
+          assert(t.isFunction(prop.set), "prop.set should be a function")
+        }
+
+        if (prop.get) desc.push(t.property("init", id("get"), prop.get))
+        if (prop.set) desc.push(t.property("init", id("set"), prop.set))
+
+        const name = toString(key)
+
+        assert(t.isExpression(name), "name should be an expression")
+
+        return t.callExpression(
+          define,
+          [ref, name, t.objectExpression(desc)])
+      }
+    }))
+    .concat([ref])
+    return list
+  }
+
+  return new Plugin("babel-plugin-proto-to-create", {
+    visitor: {
+      Program: {
+        enter(node, parent, scope) {
+          define = scope.generateUidIdentifier("define")
+        },
+
+        exit(node) {
+          if (addHelper) node.body.push(helper())
+        }
+      },
+
+      ObjectExpression({properties}, parent, scope) {
+        for (let i = 0; i < properties.length; i++) {
+          const prop = properties[i]
+
+          if (t.isProperty(prop) &&
+              prop.kind === "init" &&
+              !prop.computed &&
+              t.isIdentifier(prop.key) &&
+              prop.key.name === "__proto__") {
+            // Remove the proto property
+            properties.splice(i, 1)
+            return generate(prop.value, properties, scope)
+          }
+        }
+      },
+    }
+  })
 }

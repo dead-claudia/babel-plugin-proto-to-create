@@ -1,6 +1,6 @@
 # babel-plugin-proto-to-create
 
-A simple plugin that converts `__proto__` in object literals to `Object.assign` + `Object.create`. Engines don't usually optimize literals with `__proto__` very well (some just don't optimize the object, and others won't optimize the surrounding context), and that's what this is for.
+A simple plugin that converts `__proto__` in object literals to `Object.create` + directly setting properties. Engines don't usually optimize literals with `__proto__` very well (some just don't optimize the object, and others won't optimize the surrounding context), and that's what this is for.
 
 ## Usage
 
@@ -39,12 +39,9 @@ var foo = {
 }
 
 // Out
-var foo = Object.assign(Object.create(null), {
-    bar: 2,
-    doSomething: function () {
-        this.bar++
-    }
-})
+var foo = (_ref = Object.create(null), _ref.bar = 2, _ref.doSomething = function () {
+    this.bar++
+}, _ref)
 ```
 
 ```js
@@ -72,12 +69,9 @@ var foo = {
     },
 }
 
-var bar = Object.assign(Object.create(foo), {
-    bar: 2,
-    doSomethingElse: function () {
-        this.bar++
-    }
-})
+var bar = (_ref = Object.create(foo), _ref.bar = 2, _ref.doSomethingElse = function () {
+    this.bar++
+}, _ref)
 ```
 
 This works well with @JedWatson's [`babel-plugin-object-assign`](https://github.com/babel-plugins/babel-plugin-object-assign) plugin. It's also designed to make prototypal inheritance without classes be faster and better.

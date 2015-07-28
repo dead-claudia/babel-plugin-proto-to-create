@@ -9,7 +9,7 @@ function promise(func, ...args) {
 const generated = path.resolve(__dirname, "test/fixtures/generated")
 
 const exists = f => err => {
-    if (err.code === "ENOENT") throw err
+    if (err.code !== "ENOENT") throw err
     return f()
 }
 
