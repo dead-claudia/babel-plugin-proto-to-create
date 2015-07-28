@@ -1,15 +1,16 @@
 {
   "name": "babel-plugin-proto-to-create",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Convert `__proto__` in object literals to `Object.create` + `Object.assign`",
   "main": "index.js",
   "scripts": {
-    "compile": "babel plugin.js -o index.js",
-    "lint": "jshint .",
     "clean": "babel-node clean.js",
-    "pretest": "npm run lint && npm run compile && npm run clean",
-    "test": "mocha",
-    "prepublish": "npm run test"
+    "compile": "babel plugin.js -o index.js",
+    "prerelease": "npm run test",
+    "release": "babel plugin.js -o index.js --plugins unassert",
+    "lint": "jshint .",
+    "pretest": "npm run lint",
+    "test": "mocha && npm run clean"
   },
   "author": "Isiah Meadows <isiahmeadows@gmail.com>",
   "files": [
@@ -19,6 +20,7 @@
   "devDependencies": {
     "babel": "^5.8.5",
     "babel-core": "^5.8.3",
+    "babel-plugin-unassert": "^1.1.0",
     "expect.js": "^0.3.1",
     "jshint": "^2.8.0",
     "mocha": "^2.2.5",
@@ -35,7 +37,6 @@
     "create"
   ],
   "dependencies": {
-    "babel-runtime": "^5.8.5",
-    "lodash": "^3.10.0"
+    "babel-runtime": "^5.8.5"
   }
 }

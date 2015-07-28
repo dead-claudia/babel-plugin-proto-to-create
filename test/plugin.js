@@ -1,38 +1,34 @@
 "use strict"
 
-var path = require("path")
-var babel = require("babel-core")
-var plugin = require("..")
-var expect = require("expect.js")
+import * as fs from "fs"
+import * as path from "path"
+import * as babel from "babel-core"
+import plugin from "../plugin.js"
+import expect from "expect.js"
 
-Object.assign = require("object-assign")
+const fixtures = path.resolve(__dirname, "fixtures")
+const generated = path.join(fixtures, "generated")
+const file = path.resolve(fixtures, "test.js")
 
-describe("babel-plugin-proto-to-create", function () {
-    it("should exist", function () {
-        expect(plugin).to.be.ok()
-    })
+describe("babel-plugin-proto-to-create", () => {
+    it("should exist", () => expect(plugin).to.be.ok())
+    it("should be a function", () => expect(plugin).to.be.a("function"))
 
-    it("should be a function", function () {
-        expect(plugin).to.be.a("function")
-    })
-
-    describe("runtime behavior", function () {
-        function call(context, header, blacklist) {
-            var fs = require("fs")
-            var fixtures = path.resolve(__dirname, "fixtures")
-            var generated = path.join(fixtures, "generated")
+    describe("runtime behavior", () => {
+        function call(context, header, whitelist, blacklist) {
             var target = path.join(fixtures, "generated", context + ".js")
-            var file = path.resolve(fixtures, "test.js")
+
             try {
                 fs.mkdirSync(generated)
             } catch (e) {
                 if (e.code !== "EEXIST") throw e
             }
 
-            describe(context, function () {
+            describe(context, () => {
                 var src = babel.transformFileSync(file, {
                     plugins: ["../plugin.js"],
-                    blacklist: blacklist,
+                    whitelist,
+                    blacklist,
                 }).code
 
                 try {
@@ -49,7 +45,10 @@ describe("babel-plugin-proto-to-create", function () {
             })
         }
 
-        call("in strict code", "\"use strict\";\n", [])
-        call("in loose code", "", ["strict"])
+        call("in strict code, only", "\"use strict\";\n", ["strict"])
+        call("in loose code, only", "", [])
+
+        call("in strict code, normal", "\"use strict\";\n")
+        call("in loose code, normal", "", null, ["strict"])
     })
 })
