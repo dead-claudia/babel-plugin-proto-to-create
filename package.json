@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-proto-to-create",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Convert `__proto__` in object literals to `Object.create` + property assign",
   "main": "index.js",
   "scripts": {
