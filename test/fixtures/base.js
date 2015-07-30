@@ -1,6 +1,8 @@
 // Note that this must be runnable in both strict and loose mode. It also must
 // be runnable with this plugin as the only transformer.
 
+var expect = require("expect.js")
+
 it("should set the child prototype correctly", function () {
     var foo = {prop: 2}
 
@@ -9,6 +11,7 @@ it("should set the child prototype correctly", function () {
     }
 
     expect(Object.getPrototypeOf(bar)).to.equal(foo)
+    expect(Object.getPrototypeOf({__proto__: null})).to.equal(null)
 })
 
 it("should set the prototype correctly when extra props are set", function () {
@@ -37,6 +40,7 @@ it("should set child properties in child types", function () {
 it("should not modify prototype properties through subtypes", function () {
     var foo = {prop: 2}
 
+    /* eslint-disable no-unused-vars */
     var bar = {
         __proto__: foo,
         prop: 1,
@@ -44,6 +48,7 @@ it("should not modify prototype properties through subtypes", function () {
 
     expect(foo).to.have.property("prop")
     expect(foo.prop).to.be(2)
+    /* eslint-enable no-unused-vars */
 })
 
 it("should work with getters", function () {
@@ -57,10 +62,12 @@ it("should work with getters", function () {
 
 it("should work with setters", function () {
     var value = 0
+    /* eslint-disable accessor-pairs */
     var bar = {
         __proto__: null,
-        set prop(v) { value = v }, // jshint ignore:line
+        set prop(v) { value = v },
     }
+    /* eslint-enable accessor-pairs */
 
     bar.prop = 2
 
@@ -84,10 +91,12 @@ it("should work with combined getters and setters", function () {
 it("should work with computed properties", function () {
     var foo = {prop: 2}
 
+    /* eslint-disable no-unused-vars */
     var bar = {
         __proto__: foo,
         ["prop"]: 1,
     }
+    /* eslint-enable no-unused-vars */
 
     expect(foo).to.have.property("prop")
     expect(foo.prop).to.be(2)

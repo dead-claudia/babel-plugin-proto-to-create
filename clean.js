@@ -20,7 +20,7 @@ promise(fs.unlink, path.resolve(__dirname, "index.js")).catch(ignore)
     .then(
         entries => Promise.all(entries
             .map(entry => path.resolve(generated, entry))
-            .map(entry => promise(fs.unlinkSync, entry).catch(ignore)),
+            .map(entry => promise(fs.unlink, entry).catch(ignore)),
         exists(() => promise(fs.mkdir, generated))))
     // protect against above `then`, since it doesn't necessarily resolve the
     // promise

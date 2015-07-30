@@ -1,6 +1,6 @@
 # babel-plugin-proto-to-create
 
-A simple plugin that converts `__proto__` in object literals to `Object.create` + directly setting properties. Engines don't usually optimize literals with `__proto__` very well (some just don't optimize the object, and others won't optimize the surrounding context), and that's what this is for.
+A simple plugin that converts `__proto__` in object literals to `Object.create` + setting properties. Engines haven't historically optimized literals with `__proto__` very well. Some just don't optimize object accesses as well (SpiderMonkey), and others refuse to optimize the entire containing function context ([V8](https://github.com/petkaantonov/bluebird/wiki/Optimization-killers#2-unsupported-syntax)). That's where this plugin comes in. [See this blog post for why I made this.](http://impinball.blogspot.com/2015/07/objects-linked-to-other-objects.html)
 
 ## Usage
 
@@ -30,53 +30,99 @@ require("babel-core").transform("code", {
 
 ```js
 // In
-var foo = {
+const foo = {
     __proto__: null,
     bar: 2,
-    doSomething: function () {
+    doSomething() {
         this.bar++
-    }
+    },
 }
+```
 
+```js
 // Out
 var foo = (_ref = Object.create(null), _ref.bar = 2, _ref.doSomething = function () {
     this.bar++
-}, _ref)
+}, _ref);
 ```
 
 ```js
 // In
-var foo = {
+const foo = {
     foo: 1,
-    doSomething: function () {
+    doSomething() {
         this.foo++
     },
 }
 
-var bar = {
+const bar = {
     __proto__: foo,
     bar: 2,
-    doSomethingElse: function () {
+    doSomethingElse() {
         this.bar++
-    }
+    },
 }
+```
 
+```js
 // Out
+var _ref;
+
 var foo = {
     foo: 1,
     doSomething: function () {
         this.foo++
     },
-}
+};
 
 var bar = (_ref = Object.create(foo), _ref.bar = 2, _ref.doSomethingElse = function () {
     this.bar++
-}, _ref)
+}, _ref);
 ```
 
-This works well with @JedWatson's [`babel-plugin-object-assign`](https://github.com/babel-plugins/babel-plugin-object-assign) plugin. It's also designed to make prototypal inheritance without classes be faster and better.
+This works well with @JedWatson's [`babel-plugin-object-assign`](https://github.com/babel-plugins/babel-plugin-object-assign) plugin. It's also designed to make prototypal inheritance with objects linked to other object faster and better. Also it works with [object spread properties](https://github.com/sebmarkbage/ecmascript-rest-spread) when the `es7.objectRestSpread` transformer is enabled, making for some very sweet, easy object prototype mixins that still don't lag in performance.
 
-**Note:** this does nothing about setting `__proto__` directly (it's passed straight through):
+```js
+const Mixin1 = {
+    someCoolAddition() { /* ... */ },
+}
+
+const Mixin2 = {
+    anotherCoolMethod() { /* ... */ },
+}
+
+const Foo = {
+    master() { /* ... */ },
+
+    method() { /* ... */ },
+}
+
+const Type = {
+    __proto__: Foo,
+
+    ...Mixin1,
+    ...Mixin2,
+
+    // Override
+    method() { /* ... */ },
+}
+
+const inst = Object.create(Type)
+
+// Or, you could use __proto__ as an initializer, even, with little of a
+// performance hit.
+
+const other = {
+    __proto__: Type,
+
+    // An extra property
+    prop: 1,
+}
+```
+
+## Caveats
+
+This does nothing about setting `__proto__` directly. There is no decent way to mitigate the performance impact of dynamically setting object prototypes directly, and trying to optimize this use case is out of the scope of this library.
 
 ```js
 foo.__proto__ = bar
@@ -88,7 +134,17 @@ If you run into problems, please file an issue in the issue tracker. I will take
 
 ## Contributing
 
-Feel free to open a PR if you think something could be done better, or another thing awesome could be added. There is no official style guide, but please keep to the current code style. (4 spaces, no tabs)
+Feel free to open a PR if you think something could be done better, or another thing awesome could be added. Make sure to keep ESLint happy, and keep this as well tested as possible. When you write tests, please follow the directions in the [test readme](https://github.com/impinball/babel-plugin-proto-to-create/tree/master/test/README.md).
+
+## Code style
+
+This follows the [standard](https://standardjs.com/) code style, with a few modifications:
+
+1.  Strings are always double-quoted when not interpolating.
+2.  Function names and their opening parenthesis have no space before them, i.e. `function foo() {}`
+3.  Always include the trailing comma.
+4.  Never use `var`.
+5.  Indentation is 4 spaces.
 
 ## License
 

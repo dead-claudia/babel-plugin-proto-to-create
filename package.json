@@ -4,13 +4,15 @@
   "description": "Convert `__proto__` in object literals to `Object.create` + property assign",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint .",
     "clean": "babel-node clean.js",
+    "precompile": "npm run lint",
     "compile": "babel plugin.js -o index.js",
     "prerelease": "npm run test",
     "release": "babel plugin.js -o index.js --plugins unassert",
-    "lint": "jshint .",
     "pretest": "npm run lint",
-    "test": "mocha && npm run clean"
+    "test": "mocha",
+    "posttest": "npm run clean"
   },
   "author": "Isiah Meadows <isiahmeadows@gmail.com>",
   "files": [
@@ -18,13 +20,13 @@
   ],
   "license": "ISC",
   "devDependencies": {
-    "babel": "^5.8.5",
-    "babel-core": "^5.8.3",
+    "babel": "^5.8.19",
+    "babel-eslint": "^4.0.5",
     "babel-plugin-unassert": "^1.1.0",
+    "eslint": "^0.24.1",
+    "eslint-config-standard": "^3.4.1",
     "expect.js": "^0.3.1",
-    "jshint": "^2.8.0",
-    "mocha": "^2.2.5",
-    "object-assign": "^3.0.0"
+    "mocha": "^2.2.5"
   },
   "repository": "impinball/babel-plugin-proto-to-create",
   "homepage": "https://github.com/impinball/babel-plugin-proto-to-create",
